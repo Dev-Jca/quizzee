@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-
+import 'package:rflutter_alert/rflutter_alert.dart';
 import 'quiz_brain.dart';
+import 'expanded_button_widget.dart';
 
 void main() {
   runApp(
@@ -27,23 +28,52 @@ class QuizPage extends StatefulWidget {
 }
 
 class _QuizPageState extends State<QuizPage> {
-  List<Icon> scoreKeeper = [];
-  // List<String> questions = [
-  //   'You can lead a cow down stairs but not up stairs.',
-  //   'Approximately one quarter of human bones are in the feet.',
-  //   'A slug\'s blood is green.',
-  // ];
-
-  // List<bool> answers = [
-  //   false,
-  //   true,
-  //   true,
-  // ];
-
-  // Question q1 = Question(
-  //     q: 'You can lead a cow down stairs but not up stairs.', a: false);
-
   QuizBrain quizBrain = QuizBrain();
+
+  List<Icon> scoreKeeper = [];
+
+//method checking answers
+  void checkAnswer(bool userPickedAnswer) {
+    bool correctAnswer = quizBrain.getQuestionAnswer();
+
+    setState(() {
+      if (userPickedAnswer == correctAnswer) {
+        scoreKeeper.add(const Icon(
+          Icons.check,
+          color: Colors.green,
+        ));
+      } else if (userPickedAnswer != correctAnswer) {
+        scoreKeeper.add(
+          const Icon(
+            Icons.close,
+            color: Colors.red,
+          ),
+        );
+      }
+
+      quizBrain.nextQuestion();
+    });
+  }
+
+//method for alert
+  showAlert(context) {
+    Alert(
+      context: context,
+      title: "ALERT",
+      desc: "You have reached the end of the quiz.",
+    ).show();
+  }
+
+  //method to end the questions
+  void checkQuestionsEnd() {
+    if (quizBrain.isFinished() == true) {
+      setState(() {
+        showAlert(context);
+        quizBrain.reset();
+        scoreKeeper.clear();
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,59 +97,21 @@ class _QuizPageState extends State<QuizPage> {
             ),
           ),
         ),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(15.0),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(primary: Colors.green),
-              child: const Text(
-                'True',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20.0,
-                ),
-              ),
-              onPressed: () {
-                //The user picked true.
-                bool correctAnswer = quizBrain.getQuestionAnswer();
-                if (correctAnswer == true) {
-                  print('user got it right');
-                } else {
-                  print('user got it wrong');
-                }
-                setState(() {
-                  quizBrain.nextQuestion();
-                });
-              },
-            ),
-          ),
+        ExpandedButtonWidget(
+          text: 'True',
+          onPressed: () {
+            checkAnswer(true);
+            checkQuestionsEnd();
+          },
+          backgroundColor: Colors.green,
         ),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(15.0),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(primary: Colors.red),
-              child: const Text(
-                'False',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20.0,
-                ),
-              ),
-              onPressed: () {
-                //The user picked false.
-                bool correctAnswer = quizBrain.getQuestionAnswer();
-                if (correctAnswer == false) {
-                  print('user got it right');
-                } else {
-                  print('user got it wrong');
-                }
-                setState(() {
-                  quizBrain.nextQuestion();
-                });
-              },
-            ),
-          ),
+        ExpandedButtonWidget(
+          text: 'False',
+          onPressed: () {
+            checkAnswer(false);
+            checkQuestionsEnd();
+          },
+          backgroundColor: Colors.red,
         ),
         Row(
           children: scoreKeeper,
